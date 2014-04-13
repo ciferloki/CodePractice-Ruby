@@ -1,19 +1,19 @@
-class Trie
+require './tree_node.rb'
+
+class Trie < TreeNode
   # Implement a Trie (Prefix Tree) class that supports
   # Lookup, insert and remove method
-  attr_accessor :key
-  attr_accessor :children
+
+  attr_accessor :is_word
 
   def initialize(key)
-    @key = key
-    @children = {}
+    super(key)
+    @is_word = false
   end
 
   # Iteratively lookup a given string in the trie
   def lookup(key)
-    if key.nil? or key.empty?
-      return true
-    end
+    return true if key.nil? or key.empty?
     node = self
     len = key.length
     i = 0
@@ -24,7 +24,7 @@ class Trie
       node = node.children[key[i]]
       i += 1
     end
-    return true
+    return node.is_word?
   end
 
   # Iteratively insert a given string in the trie
@@ -49,19 +49,21 @@ class Trie
       node = new_node
       i += 1
     end
+
+    # Set the is_word flag to true if reached the end of the word
+    node.is_word = true if(i == len)
   end
 
   # Recursively remove string from the trie
   def remove(key)
     if key.nil? or key.empty?
+      @is_word = false
       return true
     end
     if not @children.has_key? key[0] or not @children[key[0]].remove(key[1, key.length - 1])
       return false
     end
-    if @children[key[0]].children.empty?
-      @children.delete(key[0])
-    end
+    @children.delete key[0] if @children[key[0]].has_children?
     return true
   end
 
@@ -73,11 +75,21 @@ class Trie
     end
   end
 
+  def has_children?
+    return @children.empty?
+  end
+
+  def is_word?
+    @is_word
+  end
 end
 
 trie = Trie.new('')
 trie.insert('nitingup')
 trie.insert('nitinjup')
+trie.insert('nit')
+trie.insert('ni')
 trie.remove('nitinjup')
+trie.remove('ni')
 trie.print_node('')
-puts trie.lookup('n')
+puts trie.lookup('ni')
